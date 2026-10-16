@@ -3,7 +3,7 @@ Contains flask routing that will safely update db contained in inventory.py
 """
 
 from flask import Flask, jsonify, request
-from src.inventory import Inventory
+from src.inventory import Inventory, Item
 
 #  App object that holds all routing information
 def create_app():
@@ -24,7 +24,18 @@ def create_app():
         try:
             return jsonify(Inventory.get(id)), 200
         except ValueError as err:
-            return jsonify(err), 404
+            return jsonify(str(err)), 404
+        
+    @app.post("/inventory")
+    def add_item():
+        data = request.get_json()
+        try:
+            new_item = Item(data["name"], data["barcode"], data["quantity"], data["brand"])
+            Inventory.add(new_item)
+            return "", 201
+        except Exception as err:
+            return jsonify({"result": "error", "message": str(err)}), 400
+            
     
     return app
 
