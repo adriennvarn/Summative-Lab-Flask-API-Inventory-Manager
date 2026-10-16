@@ -3,7 +3,7 @@ from src.inventory import Inventory
 from src.app import create_app
 
 @pytest.fixture(scope="module")
-def new_inventory():
+def inventory():
     """Module scoped inventory object"""
     inventory = Inventory()
     return inventory
