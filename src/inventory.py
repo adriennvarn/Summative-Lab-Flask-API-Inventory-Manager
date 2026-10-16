@@ -7,12 +7,18 @@ from uuid import uuid4 as uuid
 
 
 class Item:
-    def __init__(self, name: str, barcode: str, brand: str, quantity: int):
+    def __init__(self, name: str, barcode: str, quantity: int, brand: str = "Unknown"):
         self.id = str(uuid())
         self.name = name
         self.barcode = barcode
         self.brand = brand
         self.quantity = quantity
+
+    def __str__(self):
+        return f"""Name: {self.name}
+    Barcode: {self.barcode}
+    Brand: {self.brand}
+    Quantity: {self.quantity}"""
 
     @property
     def name(self):
@@ -44,7 +50,7 @@ class Item:
     def brand(self, value: str):
         if not value or not value.strip():
             self._brand = "Unknown"
-        else: 
+        else:
             self._brand = value
 
     @property
@@ -64,19 +70,30 @@ class Inventory:
     __inventory = []
 
     @classmethod
-    def get(cls):
-        return cls.__inventory.copy()
-    
+    def get(cls, id: str = None):
+        #  If no ID specified, return all
+        if not id:
+            return cls.__inventory.copy()
+        #  Check if ID exists; if yes, return it
+        item = next((item for item in cls.__inventory if item.id == id), None)
+        if not item:
+            raise ValueError(f"No item with ID {id} was found.")
+        return item
+
     @classmethod
-    def add(cls, value:Item):
+    def add(cls, value: Item):
         if not value:
-            raise ValueError("Cannot add empty item to inventory.")
+            raise TypeError("Cannot add empty item to inventory.")
         if type(value) is not Item:
-            raise TypeError(f"Inventory.add expected type Item, received type {type(value)}")
+            raise TypeError(
+                f"Inventory.add expected type Item, received type {type(value)}"
+            )
         cls.__inventory.append(value)
-    
+
     @classmethod
-    def update(cls, index:int, name=None, barcode=None, brand=None, quantity=None):
+    def update(cls, index: int, name=None, barcode=None, brand=None, quantity=None):
+        if not 0 <= index < len(cls.__inventory):
+            raise IndexError("Index must be within bounds of Inventory array.")
         item: Item = cls.__inventory[index]
         if name:
             item.name = name
@@ -86,10 +103,10 @@ class Inventory:
             item.brand = brand
         if quantity:
             item.quantity = quantity
-    
+
     @classmethod
-    def delete(cls, index:int):
-        if not index:
+    def delete(cls, index: int):
+        if index == None:
             raise ValueError("Must specify the index of item to delete.")
         if not 0 <= index < len(cls.__inventory):
             raise IndexError("Index must be within bounds of Inventory array.")

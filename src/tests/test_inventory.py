@@ -31,35 +31,34 @@ def test_add_item(inventory):
 def test_get(inventory):
     """Test that get returns the whole list, or specific index."""
     assert type(inventory.get()) == list
-    assert type(inventory.get(0)) == Item
+    first_id = inventory.get()[0].id
+    assert type(inventory.get(first_id)) == Item
     with pytest.raises(ValueError):
-        inventory.get(420)
-    with pytest.raises(TypeError):
-        inventory.get("0")
+        inventory.get("420")
     
 def test_update_item(inventory):
     """Tests that existing item is updated."""
-    #  If item doesn't exist, raise ValueError
-    with pytest.raises(ValueError):
+    #  If item doesn't exist, raise IndexError
+    with pytest.raises(IndexError):
         inventory.update(index=69, name="Corn")
     #  If item is updated, it is in list, and old item is not
-    old_item = Item("Cereal", "000", 1)
+    original_name = inventory.get()[0].name
     new_item_kwargs = {
         "name": "Resee's Puffs", 
         "barcode": "001", 
         "quantity": 3
     }
     inventory.update(index=0, **new_item_kwargs)
-    assert old_item not in inventory.get()
-    assert Item(**new_item_kwargs) in inventory.get()
+    assert original_name not in inventory.get()[0].name
+    assert all(str(item) in str(inventory.get()[0]) for item in new_item_kwargs.values())
 
 def test_delete_item(inventory):
     """Tests that an existing item is deleted."""
-    #  If item doesn't exist, raise ValueError
-    with pytest.raises(ValueError):
+    #  If item doesn't exist, raise IndexError
+    with pytest.raises(IndexError):
         inventory.delete(index=420)
     #  If item is deleted, it is not in list
     #    Check item by index
-    indexed_item = inventory.get(0)
+    indexed_item = inventory.get()[0]
     inventory.delete(index=0)
     assert indexed_item not in inventory.get()
