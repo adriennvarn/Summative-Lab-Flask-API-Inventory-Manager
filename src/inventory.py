@@ -19,6 +19,15 @@ class Item:
     Barcode: {self.barcode}
     Brand: {self.brand}
     Quantity: {self.quantity}"""
+    
+    def to_dict(self):
+        return {
+            "id": self.id,
+            "name": self.name,
+            "barcode": self.barcode,
+            "brand": self.brand,
+            "quantity": self.quantity,
+        }
 
     @property
     def name(self):

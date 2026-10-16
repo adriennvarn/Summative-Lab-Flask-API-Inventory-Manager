@@ -9,9 +9,9 @@ def test_health_check(test_client):
     """GIVEN a Flask application configured for testing
     WHEN the "/api/health" page is requested via GET
     THEN check that the status is valid"""
-    response = test_client.get("/")
+    response = test_client.get("/api/health")
     assert response.status_code == 200
-    assert {"status": "ok"} in response.get_json()
+    assert {"status": "ok"} == response.get_json()
 
 
 @responses.activate
@@ -23,7 +23,7 @@ def test_get_inventory(test_client):
     responses.add(
         responses.GET,
         BASE_URL,
-        json=[Item("Cereal", "000", 1), Item("Milk", "111", 8)],
+        json=[Item("Cereal", "000", 1).to_dict(), Item("Milk", "111", 8).to_dict()],
         status=200,
     )
 
