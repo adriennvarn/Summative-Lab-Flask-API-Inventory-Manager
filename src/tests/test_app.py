@@ -100,6 +100,7 @@ def test_post_item(test_client):
     assert result.status_code == 400
 
 
+
 def test_patch_item(test_client):
     """GIVEN a Flask app and an existing Item object
     WHEN the "/inventory/id/" page is PATCHed
@@ -108,16 +109,24 @@ def test_patch_item(test_client):
         - A 400 response is generated on invalid JSON
         - A 404 response is generated on non-existing ID"""
     #  Check patch with valid JSONs
-    result = test_client.patch("/inventory/0", {"name": "Resee's Puffs"})
+    patched_item = {
+            "id": "0",
+            "name": "Resee's Puffs",
+            "barcode": "000",
+            "brand": "General Mills",
+            "quantity": 1,
+        }
+    
+    responses.add(responses.PATCH, f"{BASE_URL}/0", json=patched_item, status=200)
+    result = test_client.patch("/inventory/0", json={"name": "Resee's Puffs"})
     assert result.status_code == 200
-    updated_item = test_client.get("/inventory/0").get_json()
-    assert updated_item["name"] == "Resee's Puffs"
+    assert result.get_json()["name"] == "Resee's Puffs"
     
     #  Check patch with invalid JSON or ID
-    result = test_client.patch("/inventory/0", {})
+    result = test_client.patch("/inventory/0", json={})
     assert result.status_code == 400
     
-    result = test_client.patch("/inventory/420", {"name": "Fake Item"})
+    result = test_client.patch("/inventory/420", json={"name": "Fake Item"})
     assert result.status_code == 404
 
 

@@ -35,7 +35,12 @@ def create_app():
             return "", 201
         except Exception as err:
             return jsonify({"result": "error", "message": str(err)}), 400
-            
+        
+    # @app.patch("/inventory/<string:id>")
+    # def update_item(id):
+    #     data = request.get_json()
+    #     try:
+    #         Inventory.update(index=)
     
     return app
 

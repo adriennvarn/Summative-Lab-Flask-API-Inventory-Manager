@@ -19,7 +19,7 @@ class Item:
     Barcode: {self.barcode}
     Brand: {self.brand}
     Quantity: {self.quantity}"""
-    
+
     def to_dict(self):
         return {
             "id": self.id,
@@ -100,10 +100,10 @@ class Inventory:
         cls.__inventory.append(value)
 
     @classmethod
-    def update(cls, index: int, name=None, barcode=None, brand=None, quantity=None):
-        if not 0 <= index < len(cls.__inventory):
-            raise IndexError("Index must be within bounds of Inventory array.")
-        item: Item = cls.__inventory[index]
+    def update(cls, id: str, name=None, barcode=None, brand=None, quantity=None):
+        item: Item = next((item for item in cls.__inventory if id == item.id), None)
+        if not item:
+            raise ValueError(f"No item with ID {id} was found.")
         if name:
             item.name = name
         if barcode:
@@ -114,9 +114,10 @@ class Inventory:
             item.quantity = quantity
 
     @classmethod
-    def delete(cls, index: int):
-        if index == None:
-            raise ValueError("Must specify the index of item to delete.")
-        if not 0 <= index < len(cls.__inventory):
-            raise IndexError("Index must be within bounds of Inventory array.")
-        cls.__inventory.pop(index)
+    def delete(cls, id: str):
+        if id == None:
+            raise ValueError("Must specify the ID of item to delete.")
+        item: Item = next((item for item in cls.__inventory if id == item.id), None)
+        if not item:
+            raise ValueError(f"No item with ID {id} was found.")
+        cls.__inventory.remove(item)
