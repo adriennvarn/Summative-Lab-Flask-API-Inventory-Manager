@@ -7,7 +7,7 @@ from uuid import uuid4 as uuid
 
 
 class Item:
-    def __init__(self, name: str, barcode: str, quantity: int, brand: str = "Unknown"):
+    def __init__(self, name: str, barcode: str, brand: str, quantity: int):
         self.id = str(uuid())
         self.name = name
         self.barcode = barcode
@@ -43,8 +43,9 @@ class Item:
     @brand.setter
     def brand(self, value: str):
         if not value or not value.strip():
-            raise ValueError("Brand name cannot be empty.")
-        self._brand = value
+            self._brand = "Unknown"
+        else: 
+            self._brand = value
 
     @property
     def quantity(self):
@@ -62,4 +63,34 @@ class Item:
 class Inventory:
     __inventory = []
 
+    @classmethod
+    def get(cls):
+        return cls.__inventory.copy()
     
+    @classmethod
+    def add(cls, value:Item):
+        if not value:
+            raise ValueError("Cannot add empty item to inventory.")
+        if type(value) is not Item:
+            raise TypeError(f"Inventory.add expected type Item, received type {type(value)}")
+        cls.__inventory.append(value)
+    
+    @classmethod
+    def update(cls, index:int, name=None, barcode=None, brand=None, quantity=None):
+        item: Item = cls.__inventory[index]
+        if name:
+            item.name = name
+        if barcode:
+            item.barcode = barcode
+        if brand:
+            item.brand = brand
+        if quantity:
+            item.quantity = quantity
+    
+    @classmethod
+    def delete(cls, index:int):
+        if not index:
+            raise ValueError("Must specify the index of item to delete.")
+        if not 0 <= index < len(cls.__inventory):
+            raise IndexError("Index must be within bounds of Inventory array.")
+        cls.__inventory.pop(index)

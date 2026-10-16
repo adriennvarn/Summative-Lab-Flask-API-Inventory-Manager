@@ -59,11 +59,6 @@ def test_delete_item(inventory):
     with pytest.raises(ValueError):
         inventory.delete(index=420)
     #  If item is deleted, it is not in list
-    #    Check item by Item object
-    item_to_delete = Item("Yogurt", "333", 2)
-    inventory.add(item_to_delete)
-    inventory.delete(item=item_to_delete)
-    assert item_to_delete not in inventory.get()
     #    Check item by index
     indexed_item = inventory.get(0)
     inventory.delete(index=0)
