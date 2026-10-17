@@ -1,5 +1,5 @@
 import pytest
-from src.inventory import Inventory
+from src.inventory import Inventory, Item
 from src.app import create_app
 
 @pytest.fixture(scope="module")
