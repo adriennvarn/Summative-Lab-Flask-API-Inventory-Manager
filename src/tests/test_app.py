@@ -1,6 +1,6 @@
 from unittest.mock import patch
 import responses
-from src.inventory import Item
+from src.inventory import Item, Inventory
 
 BASE_URL = "http://localhost:5000/inventory"
 
@@ -44,13 +44,13 @@ def test_get_by_id(test_client):
         OR invalid ID returns 404"""
     #  set up fake response data
     fake_item = {
-            "id": "abc",
-            "name": "Cereal",
-            "barcode": "000",
-            "brand": "General Mills",
-            "quantity": 1,
-        }
-    
+        "id": "abc",
+        "name": "Cereal",
+        "barcode": "000",
+        "brand": "General Mills",
+        "quantity": 1,
+    }
+
     with patch("src.inventory.Inventory.get") as mock_get:
         mock_get.return_value = fake_item
 
@@ -76,29 +76,33 @@ def test_post_item(test_client):
     #  Call with valid JSON
     result = test_client.post(
         "/inventory",
-        json={"name": "Cereal", "barcode": "000", "brand": "General Mills", "quantity": 1},
+        json={
+            "name": "Cereal",
+            "barcode": "000",
+            "brand": "General Mills",
+            "quantity": 1,
+        },
     )
     assert result.status_code == 201
-    
+
     #  Call with invalid JSONs
     result = test_client.post(
         "/inventory",
         json={"barcode": "000", "brand": "General Mills", "quantity": 1},
     )  # No name
     assert result.status_code == 400
-    
+
     result = test_client.post(
         "/inventory",
         json={"name": "Cereal", "brand": "General Mills", "quantity": 1},
     )  # No barcode
     assert result.status_code == 400
-    
+
     result = test_client.post(
         "/inventory",
         json={"name": "Cereal", "barcode": "000", "brand": "General Mills"},
     )  # No quantity
     assert result.status_code == 400
-
 
 
 def test_patch_item(test_client):
@@ -109,24 +113,22 @@ def test_patch_item(test_client):
         - A 400 response is generated on invalid JSON
         - A 404 response is generated on non-existing ID"""
     #  Check patch with valid JSONs
-    fake_item = {
-            "id": "0",
-            "name": "Resee's Puffs",
-            "barcode": "000",
-            "brand": "General Mills",
-            "quantity": 1,
-        }
-    
+    fake_item = Item(
+        name="Resee's Puffs", barcode="000", brand="General Mills", quantity=1
+    )
+    fake_item.id = "0"
+    Inventory._Inventory__inventory = [fake_item]
+
     update_json = {"name": "Resee's Puffs"}
-    responses.add(responses.PATCH, f"{BASE_URL}/0", json=fake_item.update(update_json), status=200)
+
     result = test_client.patch("/inventory/0", json=update_json)
     assert result.status_code == 200
     assert result.get_json()["name"] == "Resee's Puffs"
-    
+
     #  Check patch with invalid JSON or ID
     result = test_client.patch("/inventory/0", json={})
     assert result.status_code == 400
-    
+
     result = test_client.patch("/inventory/420", json={"name": "Fake Item"})
     assert result.status_code == 404
 
@@ -140,7 +142,7 @@ def test_delete_item(test_client):
     #  Check delete on valid ID
     result = test_client.delete("/inventory/0")
     assert result.status_code == 204
-    
+
     #  Check delete on invalid ID
     result = test_client.delete("/inventory/420")
     assert result.status_code == 404

@@ -44,11 +44,11 @@ def create_app():
         if not any(key in allowed_keys for key in data):
             return jsonify({"message": "Improperly formatted request. Must contain at least one of: name, barcode, brand, quantity."}), 400
         if any(key not in allowed_keys for key in data):
-            return jsonify({"message": "Disallowed key used. Keys may only be: name, barcode, brand, quantity."})
+            return jsonify({"message": "Disallowed key used. Keys may only be: name, barcode, brand, quantity."}), 400
         
         try:
             Inventory.update(id, **data)
-            return Inventory.get(id), 200
+            return jsonify(Inventory.get(id).to_dict()), 200
         except ValueError as err:
             return jsonify({"result": "error", "message": str(err)}), 404
     
