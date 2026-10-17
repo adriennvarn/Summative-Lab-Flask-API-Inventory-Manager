@@ -100,18 +100,13 @@ class Inventory:
         cls.__inventory.append(value)
 
     @classmethod
-    def update(cls, id: str, name=None, barcode=None, brand=None, quantity=None):
+    def update(cls, id: str, **kwargs):
         item: Item = next((item for item in cls.__inventory if id == item.id), None)
         if not item:
             raise ValueError(f"No item with ID {id} was found.")
-        if name:
-            item.name = name
-        if barcode:
-            item.barcode = barcode
-        if brand:
-            item.brand = brand
-        if quantity:
-            item.quantity = quantity
+        for key, value in kwargs.items():
+            if hasattr(item, key):
+                setattr(item, key, value)
 
     @classmethod
     def delete(cls, id: str):

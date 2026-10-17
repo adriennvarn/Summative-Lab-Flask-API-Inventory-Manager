@@ -109,7 +109,7 @@ def test_patch_item(test_client):
         - A 400 response is generated on invalid JSON
         - A 404 response is generated on non-existing ID"""
     #  Check patch with valid JSONs
-    patched_item = {
+    fake_item = {
             "id": "0",
             "name": "Resee's Puffs",
             "barcode": "000",
@@ -117,8 +117,9 @@ def test_patch_item(test_client):
             "quantity": 1,
         }
     
-    responses.add(responses.PATCH, f"{BASE_URL}/0", json=patched_item, status=200)
-    result = test_client.patch("/inventory/0", json={"name": "Resee's Puffs"})
+    update_json = {"name": "Resee's Puffs"}
+    responses.add(responses.PATCH, f"{BASE_URL}/0", json=fake_item.update(update_json), status=200)
+    result = test_client.patch("/inventory/0", json=update_json)
     assert result.status_code == 200
     assert result.get_json()["name"] == "Resee's Puffs"
     

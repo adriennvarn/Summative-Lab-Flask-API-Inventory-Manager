@@ -36,11 +36,21 @@ def create_app():
         except Exception as err:
             return jsonify({"result": "error", "message": str(err)}), 400
         
-    # @app.patch("/inventory/<string:id>")
-    # def update_item(id):
-    #     data = request.get_json()
-    #     try:
-    #         Inventory.update(index=)
+    @app.patch("/inventory/<string:id>")
+    def update_item(id):
+        data = request.get_json()
+        
+        allowed_keys = {"name", "barcode", "brand", "quantity"}
+        if not any(key in allowed_keys for key in data):
+            return jsonify({"message": "Improperly formatted request. Must contain at least one of: name, barcode, brand, quantity."}), 400
+        if any(key not in allowed_keys for key in data):
+            return jsonify({"message": "Disallowed key used. Keys may only be: name, barcode, brand, quantity."})
+        
+        try:
+            Inventory.update(id, **data)
+            return Inventory.get(id), 200
+        except ValueError as err:
+            return jsonify({"result": "error", "message": str(err)}), 404
     
     return app
 
