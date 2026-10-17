@@ -14,4 +14,4 @@ def prompt_text() -> str | None:
         return response.strip().lower()
 
 def item_as_string(item: dict) -> str:
-    return f"{item["name"]} - Brand: {item["brand"]} - Quantity: {item["quantity"]} - Barcode: {item["barcode"]}"
+    return f"{item['name']} - Brand: {item['brand']} - Quantity: {item['quantity']} - Barcode: {item['barcode']}"

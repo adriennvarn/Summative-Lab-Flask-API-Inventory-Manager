@@ -4,7 +4,6 @@ Contains the CLI program that will call fetches on app.py
 
 from src.inventory import Item, Inventory
 import src.api as api
-from src.app import create_app
 from src.utils import *
 import requests
 
@@ -190,7 +189,7 @@ def add_item() -> None:
             products = api.get_products_by_name(name)
             print("Here are the results: ")
             for index, product in enumerate(products):
-                print(f"{index+1}. Name: {product["name"]} - Brand: {product["brand"]} - Barcode: {product["barcode"]}")
+                print(f"{index+1}. Name: {product['name']} - Brand: {product['brand']} - Barcode: {product['barcode']}")
             
             while True:
                 print("Which item would you like to add? Enter it's number, or 'cancel' to return to add menu.")
@@ -328,9 +327,9 @@ def update_item() -> None:
         print("For each field, enter a new value, or leave blank to keep existing value.")
         
         #  New values, which are set to None if unchanged
-        new_name = input(f"Name (currently {item["name"]}): ")
-        new_brand = input(f"Brand (currently {item["brand"]}): ")
-        new_quantity = input(f"Quantity (currently {item["quantity"]}): ")
+        new_name = input(f"Name (currently {item['name']}): ")
+        new_brand = input(f"Brand (currently {item['brand']}): ")
+        new_quantity = input(f"Quantity (currently {item['quantity']}): ")
         
         #  Clean any empty or whitespace strings to None
         for field in [new_name, new_brand, new_quantity]:
@@ -391,7 +390,7 @@ def update_item() -> None:
                 continue
             case True:  # PATCH item
                 try:
-                    response = requests.patch(f"{BASE_URL}/{item["id"]}", json=updated_item)
+                    response = requests.patch(f"{BASE_URL}/{item['id']}", json=updated_item)
                     response.raise_for_status()
                     print("Item updated successfully!")
                 except requests.exceptions.HTTPError as err:
@@ -421,7 +420,7 @@ def delete_item() -> None:
         match confirmation:
             case "yes":
                 try:  # call delete, print confirmation on success
-                    response = requests.delete(f"{BASE_URL}/{item["id"]}")
+                    response = requests.delete(f"{BASE_URL}/{item['id']}")
                     response.raise_for_status()
                     print("Item deleted successfully.\n")
                 except requests.exceptions.HTTPError as err:
@@ -483,5 +482,4 @@ def main() -> None:
 
 
 if __name__ == "__main__":
-    create_app().run()  # Create and run Flask app
     main()
