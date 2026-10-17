@@ -76,32 +76,8 @@ def add_item() -> None:
     """Prompts for input to search API by name or barcode.
     Posts new item to server."""
     
-    
-    #  TODO prompt search by name or barcode?
-    #  TODO save barcode and name as blank placeholders, so that
-    #    if manual entry fallback is used, the fields used are pre-populated
-    
-    #  Looping main prompt to establish which search function to use
-    main_prompt = True
-    while main_prompt:
-        print("Would you like to search for an item by name or barcode?")
-        print("Enter 'name', 'barcode', or 'exit'.")
-        search_mode = prompt_text()
-        
-        if not search_mode:
-            print("Please select a field to search by.")
-            continue
-        
-        match search_mode:
-            case "name":
-                pass
-            case "barcode":
-                pass
-            case "exit":
-                print("Returning to menu.")
-                return
-    
-    def manual_entry(name=None, barcode=None) -> dict | None:
+    # ------ Utility functions ------ #
+    def manual_entry() -> dict | None:
         """Prompts if the user wants to use manual entry,
         and returns an item built from manually entered information.
         Returns:
@@ -124,10 +100,79 @@ def add_item() -> None:
                     print("Invalid response.")
                     continue
         
+        #  Big while loop in case user wants to try again
+        inputting = True
+        while inputting:
+            print("Please enter the information about your item, or type 'cancel' at any time:")
+            #  Function to validate each input
+            def set_field(prompt:str) -> str | None:
+                while True:
+                    print(f"{prompt}: ")
+                    result = prompt_text()
+                    if not result:
+                        print("Invalid entry. Please try again.")
+                        continue
+                    if result == "cancel":
+                        return None
+                    return result
+            
+            #  Cancel if any of these return None
+            name = set_field("Name")
+            if not name: return None
+            brand = set_field("Brand")
+            if not brand: return None
+            barcode = set_field("Barcode")
+            if not barcode: return None
+            
+            # quantity gets special treatment to make sure it's a valid int
+            while True:
+                quantity = set_field("Quantity")
+                if not quantity: return None
+                try:
+                    quantity = int(quantity)
+                    break
+                except ValueError:
+                    print("Entry must be a valid integer.")
+                    continue
+            
+            new_item = {
+                "name": name,
+                "brand": brand,
+                "barcode": barcode,
+                "quantity": quantity,
+            }
+            
+            #  Confirm item and return it
+            while True:
+                print("\nYou entered:\n")
+                print(item_as_string(new_item))
+                print("Is this correct? Type 'yes' to confirm, or 'no' to try again. Type 'exit' to return to menu.")
+                confirmation = prompt_text()
+                
+                if not confirmation:
+                    print("Reponse must be 'yes', 'no', or 'exit'.")
+                    continue
+                
+                match confirmation:
+                    case "yes":
+                        return new_item
+                    case "no":
+                        break  # breaks inner loop and returns to top of inputting loop
+                    case "exit":
+                        inputting = False  # break outer loop, too
+                        break
+                    case _:
+                        print("Reponse must be 'yes', 'no', or 'exit'.")
+                        continue
+                
+        
     def search_by_name() -> dict | None:
-        """Search API by name. Returns a dict of useful fields if successful,
-        raises error if no result found / API error,
-        or returns None if user exits."""
+        """Search API by product name. 
+        Returns:
+            result (dict): dict of relevant fields,
+            None: if user cancels
+        Raises:
+            ValueError: if no results found"""
         
         while True:
             print("Please enter the name of the item you're looking for, or 'cancel' to return to add menu.")
@@ -167,37 +212,108 @@ def add_item() -> None:
         except RuntimeError:
             print("It looks like the search API isn't available right now.")
             #  Ask if user wants to use manual entry
-            return manual_entry(name=name)
+            return manual_entry()
+        
+        
+    def search_by_barcode() -> dict | None:
+        """Search the API by barcode. 
+        Returns:
+            result (dict): dict of relevant fields,
+            None: if user cancels
+        Raises:
+            ValueError: if no results found
+            RuntimeError: if API request fails"""
+        
+        #  big while loop in case user wants to try again
+        inputting = True
+        while inputting:
+            while True:
+                print("Please enter the barcode of the item you're looking for, or 'cancel' to return to add menu.")
+                barcode = prompt_text()
+                
+                if not barcode:
+                    print("Entry cannot be blank.")
+                    continue
+                if barcode == "cancel":
+                    return None
+                #  Assume barcode entry is valid and proceed
+                break
+            
+            try:
+                product = api.get_product(barcode)
+                while True:
+                    print("Here is the result: ")
+                    print(item_as_string(product))
+                    print("Is this correct? Type 'yes' to confirm, or 'no' to try again. Type 'exit' to return to menu.")
+                    confirmation = prompt_text()
+                    
+                    if not confirmation:
+                        print("Reponse must be 'yes', 'no', or 'exit'.")
+                        continue
+                    
+                    match confirmation:
+                        case "yes":
+                            return product
+                        case "no":
+                            break  # breaks inner loop and returns to top of inputting loop
+                        case "exit":
+                            inputting = False  # break outer loop, too
+                            break
+                        case _:
+                            print("Reponse must be 'yes', 'no', or 'exit'.")
+                            continue
+            except RuntimeError:
+                print("It looks like the search API isn't available right now.")
+                #  Ask if user wants to use manual entry
+                return manual_entry()
             
             
+    # ------ Actual Function ------ #
     
-    #  IF NAME:
-    #  TODO validate name is valid string
-    #  TODO fetch search results from API
-    #  TODO for top 3 results, print name and brand
-    #  TODO select 1-3 or exit
-    #  TODO set barcode, name, and brand based on results
+    #  Looping main prompt to establish which search function to use
+    main_prompt = True
+    while main_prompt:
+        print("Would you like to search for an item by name or barcode?")
+        print("Enter 'name', 'barcode', or 'exit'.")
+        search_mode = prompt_text()
+        
+        if not search_mode:
+            print("Please select a field to search by.")
+            continue
+        
+        try:
+            match search_mode:
+                case "name":
+                    item = search_by_name()
+                case "barcode":
+                    item = search_by_barcode()
+                case "exit":
+                    print("Returning to menu.")
+                    return
+        except ValueError:
+            while True:
+                print("No matching items were found. Would you like to try again? Enter 'yes' or 'no'.")
+                response = prompt_text()
+                if not response:
+                    print("Entry cannot be blank.")
+                    continue
+                match response:
+                    case "yes":
+                        break  # return to main prompt
+                    case "no":
+                        main_prompt = False  # break outer loop to exit function
+                        break
     
-    
-    
-    #  TODO manual entry fallback function
-    
-    #  TRY the fetches; if runtime 503, offer manual entry instead
-    
-    #  IF BARCODE:
-    #  TODO validate barcode format
-    #  TODO fetch from API
-    #  TODO print result, confirm accuracy
-    #  TODO set barcode, name, and brand based on result
-    
-    
-    #  EXCEPT runtimeerror: manual entry fallback
-    
-    
-    #  TODO input quantity
-    #  TODO requests.post item
-    #  TODO return to main menu
-    pass
+    #  now that we finally have an item,
+    #   let's actually post it.
+    try:
+        response = requests.post(BASE_URL, json=item)
+        response.raise_for_status()
+        print("Item added successfully!")
+    except requests.exceptions.HTTPError as err:
+        print(f"The Flask server encountered an error: {err}")
+        
+    return  # the post either succeeded or failed; either way, return
 
 
 def update_item() -> None:

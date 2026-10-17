@@ -1,7 +1,10 @@
 """Miscellaneous utility functions, primarily used by the CLI to verify inputs."""
 
 def prompt_text() -> str | None:
-    """Prompts for input and returns a stripped lowercase string of input."""
+    """Prompts for input and returns a clean string.
+    Returns:
+        str: stripped lowercase string of user input
+        None: if input is invalid in any way"""
     
     response = input("> ")
     
