@@ -151,7 +151,7 @@ def update_item() -> None:
                     continue
                 
                 #  "yes" returns True, "no" returns False, "exit" returns None
-                match confirmation.lower():
+                match confirmation.strip().lower():
                     case "yes":
                         return True
                     case "no":  # break out of function loop without breaking out of outer loop
@@ -183,12 +183,34 @@ def update_item() -> None:
 
 def delete_item() -> None:
     """Delete an existing item."""
-    #  TODO call select_item, if returns None, return to main menu
-    #  TODO confirm deletion or exit
-    #  TODO requests.delete item
-    #  TODO return to main menu
-    pass
-
+    
+    #  List items and get selection
+    item = select_item()
+    
+    #  Loop until valid confirmation response
+    prompting = True
+    while prompting:
+        print("You selected:")
+        print(f"{item["name"]} - Brand: {item["brand"]} - Quantity: {item["quantity"]} - Barcode: {item["barcode"]}")
+        print("Are you sure you want to delete this item? Enter 'yes' to delete, 'no' to preserve, or 'exit' to return to menu.")
+        confirmation = input("> ")
+        
+        #  Validate confirmation isn't blank and switch on it
+        if not confirmation or not confirmation.strip():
+            print("Please enter 'yes', 'no', or 'exit'.")
+            continue
+        match confirmation.strip().lower():
+            case "yes":
+                try:  # call delete, print confirmation on success
+                    response = requests.delete(f"{BASE_URL}/{item["id"]}")
+                    response.raise_for_status()
+                    print("Item deleted successfully.\n")
+                except requests.exceptions.HTTPError as err:
+                    print(f"The Flask server encountered an error: {err}")
+            case "no"|"exit":
+                print("Returning to menu...\n")
+                return
+            
 
 def main() -> None:
     print("\nWelcome to Inventory Manager!\n")
@@ -203,7 +225,7 @@ def main() -> None:
     except requests.exceptions.HTTPError as err:
         print("The Flask server doesn't appear to be running.")
         print(f"Error: {err}")
-        running = False  # ensures loop never starts
+        return  # exits program immediately
 
     #  Main loop
     while running:
@@ -219,7 +241,7 @@ def main() -> None:
             continue
 
         #  Switch based on command chosen
-        #  Wrapped in a try/except block to neatly exit in the case of errors
+        #  Wrapped in a try/except block to neatly exit in case of uncaught errors
         try:
             match command.lower():
                 case "list":
