@@ -30,7 +30,7 @@ def list_items() -> list[dict] | None:
     
     #  Print all items in list
     for index, item in enumerate(data):
-        print(f"{index+1}. {item["name"]} - Brand: {item["brand"]} - Quantity: {item["quantity"]}")
+        print(f"{index+1}. {item["name"]} - Brand: {item["brand"]} - Quantity: {item["quantity"]} - Barcode: {item["barcode"]}")
     #  Return if calling function requires the list
     return data
 
@@ -98,19 +98,87 @@ def add_item() -> None:
 
 
 def update_item() -> None:
-    """Update an existing item."""
-    #  TODO call select_item, if returns none, return to main menu
-    #  TODO print instructions
-    #  TODO input new name
-    #  IF blank, set to None
-    #  TODO input new brand
-    #  IF blank, set to None
-    #  TODO input new quant
-    #  IF blank, set to None
-    #  TODO confirm new item's information, or exit to menu
-    #  TODO requests.patch item, passing only data that isn't None
-    #  TODO return to main menu
-    pass
+    """Update an existing item."""    
+    #  List items and get selection
+    item = select_item()
+    
+    #  Loop to retry update if final confirmation is rejected
+    prompting = True
+    while prompting:
+        #  Print instructions
+        print("For each field, enter a new value, or leave blank to keep existing value.")
+        
+        #  New values, which are set to None if unchanged
+        new_name = input(f"Name (currently {item["name"]}): ")
+        new_brand = input(f"Brand (currently {item["brand"]}): ")
+        new_quantity = input(f"Quantity (currently {item["quantity"]}): ")
+        
+        #  Clean any empty or whitespace strings to None
+        for field in [new_name, new_brand, new_quantity]:
+            if not field or not field.strip():
+                field = None
+        
+        #  Convert quantity to int, if provided, as that's what Item expects
+        try:
+            if new_quantity:
+                new_quantity = int(new_quantity.strip())
+        except ValueError:
+            print("Quantity must be a valid integer. Please try again.")
+            continue
+        
+        #  Create updated item safely
+        updated_item = item
+        if new_name:
+            updated_item["name"] = new_name
+        if new_brand:
+            updated_item["brand"] = new_brand
+        if new_quantity:
+            updated_item["quantity"] = new_quantity
+        
+        #  Utility function that will loop until a valid confirmation is received
+        def is_confirmed(item: dict) -> bool | None:
+            #  Loop on confirmation prompt. This is so that, if an invalid input is provided,
+            #    the user doesn't have to repeat the entire process.
+            confirm_prompting = True
+            while confirm_prompting:
+                print("Updated Item:\n")
+                print(f"{updated_item["name"]} - Brand: {updated_item["brand"]} - Quantity: {updated_item["quantity"]}\n")
+                print("Is this correct? Type 'yes' to confirm, or 'no' to try again. Type 'exit' to return to menu.")
+            
+                confirmation = input("> ")
+                if not confirmation or not confirmation.strip():
+                    print("Input must be 'yes', 'no', or 'exit'.")
+                    continue
+                
+                #  "yes" returns True, "no" returns False, "exit" returns None
+                match confirmation.lower():
+                    case "yes":
+                        return True
+                    case "no":  # break out of function loop without breaking out of outer loop
+                        confirm_prompting = False
+                        return False
+                    case "exit":
+                        print("Item not updated.\n")
+                        return None
+                    case _:
+                        print("Input must be 'yes', 'no', or 'exit'.")
+                        continue
+        
+        #  Use utility function to check for confirmation and PATCH if so
+        match is_confirmed(updated_item):
+            case None:  # "exit" jumps out of update function
+                return
+            case False:  # User wants to try again
+                continue
+            case True:  # PATCH item
+                try:
+                    response = requests.patch(f"{BASE_URL}/{item["id"]}", json=updated_item)
+                    response.raise_for_status()
+                    print("Item updated successfully!")
+                except requests.exceptions.HTTPError as err:
+                    print(f"The Flask server encountered an error: {err}")
+                    
+                return  # PATCH either succeeded or failed, either way, return
 
 
 def delete_item() -> None:
