@@ -22,6 +22,7 @@ def create_app():
     
     @app.get("/inventory/<string:id>")
     def get_by_id(id):
+        """Return a specific inventory item."""
         try:
             item = Inventory.get(id)
             return jsonify(item), 200
@@ -30,6 +31,7 @@ def create_app():
         
     @app.post("/inventory")
     def add_item():
+        """Add a new item to inventory."""
         data = request.get_json()
         try:
             new_item = Item(data["name"], data["barcode"], data["quantity"], data["brand"])
@@ -40,6 +42,7 @@ def create_app():
         
     @app.patch("/inventory/<string:id>")
     def update_item(id):
+        """Update existing item in inventory."""
         data = request.get_json()
         
         allowed_keys = {"name", "barcode", "brand", "quantity"}
@@ -56,6 +59,7 @@ def create_app():
         
     @app.delete("/inventory/<string:id>")
     def delete_item(id):
+        """Delete an existing item from inventory."""
         try:
             Inventory.delete(id)
             return "", 204

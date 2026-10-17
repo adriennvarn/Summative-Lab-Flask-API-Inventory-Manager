@@ -1,10 +1,17 @@
+"""
+Library for accessing openfoodfacts API.
+"""
+
 import requests
 
 
 def get_products_by_name(name: str) -> list[dict[str, str]]:
     """
-    Search Open Food Facts by product name and return list of best-matching barcodes.
+    Search Open Food Facts by product name.
+    Returns:
+        matches (list[dict]): best-matching items
     Raises:
+        ValueError: if no results for search term
         RuntimeError: if API request fails
     """
 
@@ -50,7 +57,13 @@ def get_products_by_name(name: str) -> list[dict[str, str]]:
 
 
 def get_product(barcode: str) -> dict[str, str]:
-    #  TODO: unauthorized for url; i think i have the wrong address to search by UPC
+    """Searches OpenFoodFacts API by barcode.
+    Returns:
+        item (dict): item with matching barcode
+    Raises:
+        ValueError: if no match to barcode
+        RuntimeError: if API fails
+    """
     
     url = f"https://openfoodfacts.org/api/v3/product/{barcode}.json"
 

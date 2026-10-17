@@ -1,17 +1,20 @@
 """
-Contains the CLI program that will call fetches on app.py
+Entry point of the program.
+CLI application that sends requests to a Flask server.
 """
 
-from src.inventory import Item, Inventory
 import src.api as api
-from src.utils import *
+from src.utils import prompt_text, item_as_string
 import requests
 
 BASE_URL = "http://localhost:5000/inventory"
 
 
 def list_items() -> list[dict] | None:
-    """Prints a list of all items in the current inventory, and returns it."""
+    """Prints a list of all items in the current inventory.
+    Returns:
+        inventory (list[dict]): list of all items in inventory
+        None: if inventory is empty"""
 
     #  Get response from server
     try:
@@ -37,7 +40,10 @@ def list_items() -> list[dict] | None:
 
 def select_item() -> dict | None:
     """Prints all items in the inventory provided.
-    Prompts selection of a specific item."""
+    Prompts selection of a specific item.
+    Returns:
+        item (dict): selected item
+        None: if user cancels"""
 
     items = list_items()
     #  If items is None, inventory was empty (or err) and it was handled already.

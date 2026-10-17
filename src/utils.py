@@ -16,4 +16,7 @@ def prompt_text(keep_case=False) -> str | None:
         return response.strip().lower()
 
 def item_as_string(item: dict) -> str:
+    """Formats an item into a nice string.
+    Returns:
+        text (str): Nicely formatted string of item."""
     return f"{item['name']} - Brand: {item['brand']} - Quantity: {item['quantity']} - Barcode: {item['barcode']}"

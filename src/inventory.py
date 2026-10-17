@@ -7,6 +7,9 @@ from uuid import uuid4 as uuid
 
 
 class Item:
+    """Class representing an item in the inventory.
+    Validates all inputs."""
+
     def __init__(self, name: str, barcode: str, quantity: int, brand: str = "Unknown"):
         self.id = str(uuid())
         self.name = name
@@ -76,10 +79,19 @@ class Item:
 
 
 class Inventory:
+    """Singleton class representing inventory as a list of Items."""
     __inventory = []
 
     @classmethod
-    def get(cls, id: str = None) -> list | Item :
+    def get(cls, id: str = None) -> list[Item] | Item:
+        """Get items from inventory.
+        Arguments:
+            id (str): Optional, get a specific item
+        Returns:
+            all (list[Item]): All items in inventory
+            item (Item): item with matching ID
+        Raises:
+            ValueError: if ID is given but returns no matches"""
         #  If no ID specified, return all
         if not id:
             return cls.__inventory.copy()
@@ -91,6 +103,11 @@ class Inventory:
 
     @classmethod
     def add(cls, value: Item):
+        """Adds item to inventory.
+        Arguments:
+            value (Item): Item to add
+        Raises:
+            TypeError: if item is empty or of wrong type."""
         if not value:
             raise TypeError("Cannot add empty item to inventory.")
         if type(value) is not Item:
@@ -101,15 +118,31 @@ class Inventory:
 
     @classmethod
     def update(cls, id: str, **kwargs):
+        """Updates existing item by ID.
+        Arguments:
+            id (str): ID of existing item.
+            kwargs: Any of the available fields on an Item to update.
+        Raises:
+            ValueError: if no ID, or no item with given ID is found."""
+        if id == None:
+            raise ValueError("Must specify the ID of item to update.")
         item: Item = next((item for item in cls.__inventory if id == item.id), None)
         if not item:
             raise ValueError(f"No item with ID {id} was found.")
+        
+        #  for each kwarg, see if the item has that attr, and if so, set it
+        #  filters out any invalid keys, though they shouldn't make it here to begin with
         for key, value in kwargs.items():
             if hasattr(item, key):
                 setattr(item, key, value)
 
     @classmethod
     def delete(cls, id: str):
+        """Deletes existing item by ID.
+        Arguments:
+            id (str): ID of item to delete.
+        Raises:
+            ValueError: if no ID, or no item with given ID is found."""
         if id == None:
             raise ValueError("Must specify the ID of item to delete.")
         item: Item = next((item for item in cls.__inventory if id == item.id), None)
