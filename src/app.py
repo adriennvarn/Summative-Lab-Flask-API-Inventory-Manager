@@ -51,6 +51,14 @@ def create_app():
             return jsonify(Inventory.get(id).to_dict()), 200
         except ValueError as err:
             return jsonify({"result": "error", "message": str(err)}), 404
+        
+    @app.delete("/inventory/<string:id>")
+    def delete_item(id):
+        try:
+            Inventory.delete(id)
+            return "", 204
+        except ValueError as err:
+            return jsonify({"result": "error", "message": str(err)}), 404
     
     return app
 
