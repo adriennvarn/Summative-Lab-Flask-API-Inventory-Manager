@@ -1,9 +1,11 @@
 import requests
 
 
-def get_barcodes_by_name(name: str) -> list[dict[str, str]]:
+def get_products_by_name(name: str) -> list[dict[str, str]]:
     """
     Search Open Food Facts by product name and return list of best-matching barcodes.
+    Raises:
+        RuntimeError: if API request fails
     """
 
     url = "https://world.openfoodfacts.org/cgi/search.pl"
@@ -14,7 +16,7 @@ def get_barcodes_by_name(name: str) -> list[dict[str, str]]:
         "search_simple": "1",
         "action": "process",
         "json": "1",
-        "page_size": "5",
+        "page_size": "3",
     }
 
     #  Custom user agent headers required by API
@@ -78,5 +80,5 @@ def get_product(barcode: str) -> dict[str, str]:
 
 # tests if run directly
 if __name__ == "__main__":
-    print("\n".join(get_barcodes_by_name("Oreo double stuff")))
+    print("\n".join(get_products_by_name("Oreo double stuff")))
     print(get_product("3017624010701"))  # check with nutella's UPC
