@@ -23,7 +23,7 @@ def create_app():
     @app.get("/inventory/<string:id>")
     def get_by_id(id):
         try:
-            item = Inventory.get(id).to_dict()
+            item = Inventory.get(id)
             return jsonify(item), 200
         except ValueError as err:
             return jsonify(str(err)), 404

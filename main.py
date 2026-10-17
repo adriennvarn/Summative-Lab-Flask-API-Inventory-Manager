@@ -225,7 +225,7 @@ def add_item() -> None:
                         f"Input must be a number between 1 and {len(products)}, or 'cancel'."
                     )
                     continue
-                #  Assume index is valid 
+                #  Assume index is valid
                 #  get quantity; gets special treatment to make sure it's a valid int
                 while True:
                     print("Please enter the quantity available.")
@@ -238,7 +238,7 @@ def add_item() -> None:
                     except ValueError:
                         print("Entry must be a valid integer.")
                         continue
-                
+
                 #  add quantity and return selected product
                 products[index].setdefault("quantity", quantity)
                 return products[index]
@@ -275,9 +275,12 @@ def add_item() -> None:
 
             try:
                 product = api.get_product(barcode)
+                product.setdefault("barcode", barcode)
                 while True:
                     print("Here is the result: ")
-                    print(item_as_string(product))
+                    print(
+                        f"Name: {product['name']} - Brand: {product['brand']} - Barcode: {product['barcode']}"
+                    )
                     print(
                         "Is this correct? Type 'yes' to confirm, or 'no' to try again. Type 'exit' to return to menu."
                     )
@@ -301,7 +304,7 @@ def add_item() -> None:
                                 except ValueError:
                                     print("Entry must be a valid integer.")
                                     continue
-                            
+
                             #  add quantity and return selected product
                             product.setdefault("quantity", quantity)
                             return product
@@ -358,8 +361,11 @@ def add_item() -> None:
                         main_prompt = False  # break outer loop to exit function
                         break
 
+    #  if item is None, user canceled
+    if not item:
+        return
     
-    #   and actually post it.
+    #  actual post
     try:
         response = requests.post(BASE_URL, json=item)
         response.raise_for_status()
@@ -525,7 +531,7 @@ def main() -> None:
     while running:
         #  Main input
         print(
-            "Please select from the following options: list, add, update, delete, exit"
+            "\nPlease select from the following options: list, add, update, delete, exit"
         )
         command = prompt_text()
 
@@ -553,8 +559,9 @@ def main() -> None:
                 case _:
                     print("Invalid command entered.")
         except Exception as err:
-            print(f"The program encountered an unknown error: {err}")
+            print(f"The program encountered an unknown error:")
             running = False
+            raise err
 
 
 if __name__ == "__main__":

@@ -79,12 +79,12 @@ class Inventory:
     __inventory = []
 
     @classmethod
-    def get(cls, id: str = None):
+    def get(cls, id: str = None) -> list | Item :
         #  If no ID specified, return all
         if not id:
             return cls.__inventory.copy()
         #  Check if ID exists; if yes, return it
-        item = next((item for item in cls.__inventory if item.id == id), None)
+        item: Item = next((item for item in cls.__inventory if item.id == id), None)
         if not item:
             raise ValueError(f"No item with ID {id} was found.")
         return item
