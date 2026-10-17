@@ -1,9 +1,11 @@
 import requests
 
 
-def get_barcodes_by_name(name: str) -> list[dict[str, str]]:
+def get_products_by_name(name: str) -> list[dict[str, str]]:
     """
     Search Open Food Facts by product name and return list of best-matching barcodes.
+    Raises:
+        RuntimeError: if API request fails
     """
 
     url = "https://world.openfoodfacts.org/cgi/search.pl"
@@ -14,7 +16,7 @@ def get_barcodes_by_name(name: str) -> list[dict[str, str]]:
         "search_simple": "1",
         "action": "process",
         "json": "1",
-        "page_size": "5",
+        "page_size": "3",
     }
 
     #  Custom user agent headers required by API
@@ -48,11 +50,13 @@ def get_barcodes_by_name(name: str) -> list[dict[str, str]]:
 
 
 def get_product(barcode: str) -> dict[str, str]:
-    url = f"https://world.openfoodfacts.org/{barcode}.json"
+    #  TODO: unauthorized for url; i think i have the wrong address to search by UPC
+    
+    url = f"https://openfoodfacts.org/api/v3/product/{barcode}.json"
 
     #  Custom user agent headers required by API
     headers = {
-        "User-Agent": "Flatiron Assessment - Version 0.1 - adriennvarn@gmail.com"
+        "User-Agent": "Flatiron Assessment/0.1 (adriennvarn@gmail.com)"
     }
 
     #  Specify fields requested to optimize
@@ -63,7 +67,7 @@ def get_product(barcode: str) -> dict[str, str]:
         response.raise_for_status()
         data = response.json()
 
-        if data.get("status") == 1:  # 1 = product found
+        if data.get("status") == "success": 
             product = data["product"]
             #  Return array of name and brand
             return {
@@ -78,5 +82,5 @@ def get_product(barcode: str) -> dict[str, str]:
 
 # tests if run directly
 if __name__ == "__main__":
-    print("\n".join(get_barcodes_by_name("Oreo double stuff")))
+    print(get_products_by_name("Oreo double stuff"))
     print(get_product("3017624010701"))  # check with nutella's UPC
