@@ -50,6 +50,8 @@ def get_products_by_name(name: str) -> list[dict[str, str]]:
 
 
 def get_product(barcode: str) -> dict[str, str]:
+    #  TODO: unauthorized for url; i think i have the wrong address to search by UPC
+    
     url = f"https://world.openfoodfacts.org/{barcode}.json"
 
     #  Custom user agent headers required by API

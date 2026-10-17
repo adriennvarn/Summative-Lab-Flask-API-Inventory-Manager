@@ -17,12 +17,14 @@ def create_app():
     @app.get("/inventory")
     def get_all():
         """Return all inventory items."""
-        return jsonify(Inventory.get()), 200
+        items = [item.to_dict() for item in Inventory.get()]
+        return jsonify(items), 200
     
     @app.get("/inventory/<string:id>")
     def get_by_id(id):
         try:
-            return jsonify(Inventory.get(id)), 200
+            item = Inventory.get(id).to_dict()
+            return jsonify(item), 200
         except ValueError as err:
             return jsonify(str(err)), 404
         
